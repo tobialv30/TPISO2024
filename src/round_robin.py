@@ -76,7 +76,10 @@ def resetPrintProcesos():
         PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Finalizado", style='red')
 
 
+##################hasta aca es todo grafico
 
+
+#EJEMPLO PANTALLA PROCESO
 
 #        0              1           2               3
 #  | id_proceso  |   Tamaño   |   Arribo    |   Irrupcion   |
@@ -138,7 +141,7 @@ def verificar_multiprogramacion():
 # funcion que lleva un proceso a la lista de ejecucion
 def ejecutar_proceso():
 
-    global  ejecucion_flag
+    global ejecucion_flag
     global ejecucion
     global terminados
     global quantum_actual
@@ -154,7 +157,7 @@ def ejecutar_proceso():
         if ejecucion[0][3] == 0:
            
             # se habilita la bandera de evento
-            ejecucion_flag=True
+            ejecucion_flag=True            #cambia el proceso, luego esto genera el evento
             
             terminados.append(ejecucion[0])
             ejecucion.pop(0)
@@ -218,7 +221,7 @@ def open_csv():
 
     p_nuevos = []
 
-    with open(('../' + nombre_archivo), mode='r') as archivo_csv:
+    with open('procesos.csv', mode='r') as archivo_csv:
 
         # Crea un objeto lector CSV
         lector_csv = csv.reader(archivo_csv)
@@ -236,11 +239,7 @@ def open_csv():
     # Elimina los elementos con valor > 250 de tamaño de proceso porque nunca van a poder entrar
     # filtra la lista nuevo por tamaño
 
-    p_nuevos = [proceso for proceso in p_nuevos if proceso[1] <= 250]
-
-    # Se toman los 10 primeros procesos                     //Ver si hacer primero el ordenado y despues el recortar, pero por ahora da lo mismo
-    p_nuevos = p_nuevos[:10]
-
+   
     # Ordena la lista procesos_filtrados por tiempo de arribo (por comodidad nms)
     p_nuevos = sorted(p_nuevos, key=lambda proceso: proceso[2])
 
@@ -255,8 +254,8 @@ def print_memory_state():
 
 
 
-# Algoritmo de best_fit, se le pasa un proceso
-def best_fit(proceso):
+
+def worst_fit(proceso):
 
     global best_partition
     global best_minimal_frag
@@ -264,33 +263,40 @@ def best_fit(proceso):
     global memoria_secundaria
     global aux_principal
 
-    for mem, mem_map in memory.items():
-        # print(f'El proceso {proceso[0]} se encuentra recorriendo la particion {mem}')
+    # Inicializamos la variable que almacenará el tamaño de la partición más grande disponible
+    worst_partition = None
+    worst_fragmentation = -1  # Fragmentación negativa para asegurar que cualquier valor positivo lo reemplace
 
-        if mem_map["busy"] == False:
+    # Iteramos sobre las particiones de memoria
+    for mem, mem_map in memory.items():
+
+        # Si la partición no está ocupada
+        if not mem_map["busy"]:
+            # Calculamos el espacio que quedaría después de asignar el proceso
             fragmentacion = mem_map["tam"] - proceso[1]
 
-            if fragmentacion >= 0:
-                if fragmentacion < best_minimal_frag:
-                    best_minimal_frag = fragmentacion
-                    best_partition = mem_map["tam"]
+            # Si la partición es suficiente para el proceso y es más grande que la anterior
+            if fragmentacion >= 0 and fragmentacion > worst_fragmentation:
+                worst_fragmentation = fragmentacion
+                worst_partition = mem_map
 
-    for mem, mem_map in memory.items():
-          
-        if (best_partition == mem_map["tam"]) and (not mem_map["busy"]):
-            mem_map["frag_int"] = mem_map["tam"] - proceso[1]
-            mem_map["busy"] = True
-            mem_map["busy_for"] = proceso[0]
-            # print("appendeo al principal")
+    # Si encontramos una partición adecuada (la más grande)
+    if worst_partition:
+        # Actualizamos los datos de la partición, asignando el proceso
+        worst_partition["frag_int"] = worst_partition["tam"] - proceso[1]
+        worst_partition["busy"] = True
+        worst_partition["busy_for"] = proceso[0]
 
-            aux_principal.append(proceso)
+        # Añadimos el proceso a la memoria principal
+        aux_principal.append(proceso)
 
-            if proceso in memoria_secundaria:
-                memoria_secundaria.pop(memoria_secundaria.index(proceso))
+        # Si el proceso estaba en la memoria secundaria, lo eliminamos de ahí
+        if proceso in memoria_secundaria:
+            memoria_secundaria.pop(memoria_secundaria.index(proceso))
 
-    best_minimal_frag = 300
-    best_partition = 300
-
+    # Reiniciamos los valores para la siguiente llamada
+    worst_fragmentation = -1
+    worst_partition = None
 
 
 
@@ -364,7 +370,7 @@ def main_round_robin():
         for proceso in listos[:3]:
             # Para no cargar un proceso ya cargado
             if not (((proceso[0] == memory["part1"]["busy_for"])) or ((proceso[0] == memory["part2"]["busy_for"])) or ((proceso[0] == memory["part3"]["busy_for"]))):
-                best_fit(proceso)
+                worst_fit(proceso)
 
         ejecutar_proceso()
 
@@ -372,8 +378,8 @@ def main_round_robin():
         
         # imprimir tablas
         # se limpia la panatalla        
-        os.system('cls')    # comando windows
-        os.system('clear')  # por si se ejecuta en linux
+        #os.system('cls')    # comando windows
+        #os.system('clear')  # por si se ejecuta en linux
         
         # como no se puede actualizar campo por campo los datos hacemos que se reimpriman las dos tablas
         resetPrintMemoria()
@@ -381,6 +387,7 @@ def main_round_robin():
         
         console.print(PrintMemoria)
         console.print(PrintProcesos)
+
 
         verificar_quantum()
 
@@ -398,6 +405,7 @@ def main_round_robin():
             swap_in(ejecucion[0])
 
         # Incrementa el tiempo
+        print('El tiempo actual ',tiempo_actual)
         tiempo_actual += 1
 
 
@@ -479,17 +487,3 @@ PrintProcesos = Table(title="Procesos")
 
 
 
-
-
-# -------------------------------------
-# Ejecucion principal del planificador
-# -------------------------------------
-
-# A p_nuevos le asignamos el archivo csv
-p_nuevos = open_csv()
-print(p_nuevos)
-
-# # Una vez cargado, se ejecuta el round robin
-main_round_robin()
-print(terminados)
-print_memory_state()
