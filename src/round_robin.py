@@ -304,38 +304,45 @@ def worst_fit(proceso):
 # porque simplemente ese proceso que debe hacer swap_in es porque no esta en memoria y debe ocupar la cpu
 # por lo tanto debe reemplazarse en la mejor particion
 def swap_in(proceso):
-
-    global best_partition
-    global best_minimal_frag
     global memory
     global memoria_secundaria
     global aux_principal
 
-    for mem, mem_map in memory.items():
-        # print(f'El proceso {proceso[0]} se encuentra recorriendo la particion {mem}')
+    # Inicializamos las variables para almacenar la partición que dejará más espacio libre (mayor fragmentación)
+    worst_partition = None
+    worst_fragmentation = -1  # Valor inicial negativo para asegurar que cualquier fragmentación positiva lo reemplace
 
+    # Buscamos la partición que tenga mayor espacio libre después de asignar el proceso
+    for mem, mem_map in memory.items():
+        # Calculamos la fragmentación de cada partición (espacio sobrante después de asignar el proceso)
         fragmentacion = mem_map["tam"] - proceso[1]
 
-        if fragmentacion >= 0:
-            if fragmentacion < best_minimal_frag:
-                best_minimal_frag = fragmentacion
-                best_partition = mem_map["tam"]
+        # Si la partición es lo suficientemente grande y tiene mayor fragmentación que la encontrada hasta ahora
+        if fragmentacion >= 0 and fragmentacion > worst_fragmentation:
+            worst_fragmentation = fragmentacion
+            worst_partition = mem
 
-    for mem, mem_map in memory.items():
-        if (best_partition == mem_map["tam"]):
-            # swap out
+    # Si encontramos una partición adecuada
+    if worst_partition is not None:
+        # Realizamos el swap-out si la partición ya está ocupada
+        mem_map = memory[worst_partition]
+        if mem_map["busy"]:
+            # Eliminamos el proceso actualmente en la partición de la memoria principal
             for swapout in aux_principal:
                 if swapout[0] == mem_map["busy_for"]:
-                    aux_principal.pop(aux_principal.index(swapout))
+                    aux_principal.remove(swapout)
                     break
 
-            mem_map["frag_int"] = mem_map["tam"] - proceso[1]
-            mem_map["busy"] = True
-            mem_map["busy_for"] = proceso[0]
-            aux_principal.append(proceso)  # Swap in
+        # Asignamos el nuevo proceso a la partición seleccionada
+        mem_map["frag_int"] = mem_map["tam"] - proceso[1]
+        mem_map["busy"] = True
+        mem_map["busy_for"] = proceso[0]
+        aux_principal.append(proceso)  # Swap-in del nuevo proceso
 
-    best_minimal_frag = 300
-    best_partition = 300
+    else:
+        # Si no hay partición adecuada, el proceso sigue en memoria secundaria (puedes manejar el caso aquí)
+        print(f"No se encontró una partición para el proceso {proceso[0]}")
+
 
 
 # Ejecuta el round robin
