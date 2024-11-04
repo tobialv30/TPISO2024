@@ -122,22 +122,22 @@ def verificar_tiempo_arribo():
 
 
 def verificar_multiprogramacion():
-
     global ejecucion
     global listos
     global listo_suspendido
+    global tiempo_actual  # Asegúrate de que este es el tiempo de CPU actual
 
-    if ((len(ejecucion) + len(listos)) < 5) and (listo_suspendido):
-
+    if (len(ejecucion) + len(listos) < 5) and listo_suspendido:
         procesos_que_entran = 5 - len(ejecucion) - len(listos)
 
         # Agrega los procesos que pueden entrar en la lista de listos
-        listos.extend(listo_suspendido[:procesos_que_entran])
+        for i in range(min(procesos_que_entran, len(listo_suspendido))):
+            proceso = listo_suspendido[i]
+            proceso[6] = tiempo_actual  # Guardar tiempo de CPU actual
+            listos.append(proceso)
 
         # Elimina los procesos que se han movido a la lista de listos
         listo_suspendido = listo_suspendido[procesos_que_entran:]
-
-# Si hay un proceso en ejecución, reduce su tiempo restante y el quantum actual
 
 
 # funcion que lleva un proceso a la lista de ejecucion
@@ -235,7 +235,7 @@ def open_csv():
             # Agrega los valores (con tipo int) a la lista nuevos
 
             #                | id_proceso  |   Tamaño   |   Arribo    |   Irrupcion   | I fantasma
-            p_nuevos.append([ int(fila[0]), int(fila[1]),int(fila[2]), int(fila[3]),int(fila[3]),None])
+            p_nuevos.append([ int(fila[0]), int(fila[1]),int(fila[2]), int(fila[3]),int(fila[3]),None,None])
 
     print('csv abierto!!')
 
@@ -407,7 +407,7 @@ def main_round_robin():
         
         
     
-        comprobar_eventos()
+        ######comprobar_eventos()
         # input()
 
         # Al cambiar proceso de ejecucion, asegurarse que esté cargado en memoria1 (Swap in / swap out)
@@ -421,8 +421,41 @@ def main_round_robin():
 
 
 def Estadisticas():
+    global PrintEstadisticas
+    global PromRet
+    global PromEsp
+    
+    PrintEstadisticas = Table(title="Estadisticas")
+    PrintEstadisticas.add_column("ID PROCESO", justify="center", style="cyan", no_wrap=True)
+    PrintEstadisticas.add_column("Tiempo de retorno", justify="center", style="magenta")
+    PrintEstadisticas.add_column("Tiempo de espera", justify="center", style="green")
+    
     for proceso in terminados:
-        print('El tiempo actual ',tiempo_actual)
+        retorno = proceso[5] - proceso[2]
+        PromRet = PromRet + retorno 
+        Espera = retorno - proceso[6]
+        PromEsp = PromEsp +  Espera
+        #print('PROCESO', proceso[0])
+        #print('El tiempo de retorno ', retorno)
+        #print('El tiempo de espera ', Espera)
+        PrintEstadisticas.add_row(str(proceso[0]),str(retorno),str(Espera))
+    
+    console.print(PrintEstadisticas)
+    
+    print('El tiempo de retorno promedio ',  PromRet/len(terminados))
+    print('El tiempo de espera promedio ', PromEsp/len(terminados))
+
+
+
+
+    
+
+
+
+
+
+
+
 
 
 # PARTE DE ESTRUCTURAS DE DATOS
@@ -477,10 +510,9 @@ terminados = []
 memoria_secundaria = []
 aux_principal = []
 
-# best fist
-best_minimal_frag = 300
-best_partition = 300
+PromRet = 0
 
+PromEsp = 0
 
 # Se inicializa el tiempo en 0 por si algun proceso arriba en ese momento
 tiempo_actual = 0
@@ -496,6 +528,8 @@ console = Console()
 PrintMemoria = Table(title="Particiones de memoria")
 
 PrintProcesos = Table(title="Procesos")
+
+PrintEstadisticas = Table(title="Estadisticas")
 
 
 

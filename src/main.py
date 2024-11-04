@@ -20,6 +20,6 @@ print(p_nuevos)
 
 # # Una vez cargado, se ejecuta el round robin
 round_robin.main_round_robin()
-print(round_robin.terminados)
-round_robin.print_memory_state()
+#print(round_robin.terminados)
+#round_robin.print_memory_state()
 round_robin.Estadisticas()
