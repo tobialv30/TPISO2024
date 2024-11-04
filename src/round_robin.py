@@ -58,25 +58,27 @@ def resetPrintProcesos():
     PrintProcesos.add_column("Tamaño", style="magenta")
     PrintProcesos.add_column("T. Arribo", justify="right", style="green")
     PrintProcesos.add_column("T. Irrupcion", justify="right", style="green")
+    PrintProcesos.add_column("I Fantasma", justify="right", style="green")
     PrintProcesos.add_column("Estado", justify="right", style="green")
+    PrintProcesos.add_column("Tiempo salida CPU", justify="right", style="green")
 
     for proceso in p_nuevos:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Nuevo")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Nuevo")
 
     for proceso in listo_suspendido:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Listo/Suspendido")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Listo/Suspendido")
 
     for proceso in listos:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Listo")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Listo")
 
     for proceso in ejecucion:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Ejecucion")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Ejecucion")
 
     for proceso in terminados:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Finalizado", style='red')
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Finalizado",str(proceso[5]))
 
+#style red le saque por ahora
 
-##################hasta aca es todo grafico
 
 
 #EJEMPLO PANTALLA PROCESO
@@ -140,7 +142,7 @@ def verificar_multiprogramacion():
 
 # funcion que lleva un proceso a la lista de ejecucion
 def ejecutar_proceso():
-
+    global tiempo_actual
     global ejecucion_flag
     global ejecucion
     global terminados
@@ -160,6 +162,7 @@ def ejecutar_proceso():
             ejecucion_flag=True            #cambia el proceso, luego esto genera el evento
             
             terminados.append(ejecucion[0])
+            terminados[-1][5]= tiempo_actual
             ejecucion.pop(0)
             quantum_actual = 0
 
@@ -231,8 +234,8 @@ def open_csv():
 
             # Agrega los valores (con tipo int) a la lista nuevos
 
-            #                | id_proceso  |   Tamaño   |   Arribo    |   Irrupcion   |
-            p_nuevos.append([ int(fila[0]), int(fila[1]),int(fila[2]), int(fila[3])])
+            #                | id_proceso  |   Tamaño   |   Arribo    |   Irrupcion   | I fantasma
+            p_nuevos.append([ int(fila[0]), int(fila[1]),int(fila[2]), int(fila[3]),int(fila[3]),None])
 
     print('csv abierto!!')
 
@@ -303,6 +306,7 @@ def worst_fit(proceso):
 # Parecida a la funcion best fit, la diferencia es que, aqui no se controla si esta ocupada o no
 # porque simplemente ese proceso que debe hacer swap_in es porque no esta en memoria y debe ocupar la cpu
 # por lo tanto debe reemplazarse en la mejor particion
+
 def swap_in(proceso):
     global memory
     global memoria_secundaria
@@ -341,7 +345,7 @@ def swap_in(proceso):
 
     else:
         # Si no hay partición adecuada, el proceso sigue en memoria secundaria (puedes manejar el caso aquí)
-        print(f"No se encontró una partición para el proceso {proceso[0]}")
+        print(f" {proceso[0]}")
 
 
 
@@ -416,8 +420,9 @@ def main_round_robin():
         tiempo_actual += 1
 
 
-
-
+def Estadisticas():
+    for proceso in terminados:
+        print('El tiempo actual ',tiempo_actual)
 
 
 # PARTE DE ESTRUCTURAS DE DATOS
