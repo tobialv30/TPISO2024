@@ -58,24 +58,23 @@ def resetPrintProcesos():
     PrintProcesos.add_column("Tamaño", style="magenta")
     PrintProcesos.add_column("T. Arribo", justify="right", style="green")
     PrintProcesos.add_column("T. Irrupcion", justify="right", style="green")
-    PrintProcesos.add_column("I Fantasma", justify="right", style="green")
     PrintProcesos.add_column("Estado", justify="right", style="green")
     PrintProcesos.add_column("Tiempo salida CPU", justify="right", style="green")
 
     for proceso in p_nuevos:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Nuevo")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Nuevo")
 
     for proceso in listo_suspendido:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Listo/Suspendido")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Listo/Suspendido")
 
     for proceso in listos:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Listo")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Listo")
 
     for proceso in ejecucion:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Ejecucion")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Ejecucion")
 
     for proceso in terminados:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), str(proceso[4]), "Finalizado",str(proceso[5]))
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Finalizado",str(proceso[5]))
 
 #style red le saque por ahora
 
@@ -260,8 +259,6 @@ def print_memory_state():
 
 def worst_fit(proceso):
 
-    global best_partition
-    global best_minimal_frag
     global memory
     global memoria_secundaria
     global aux_principal
@@ -463,24 +460,24 @@ def Estadisticas():
 memory = {
     'part1': {
         'part_id': 1,
-        'tam': 110,
-        'frag_int': 110,
+        'tam': 50,
+        'frag_int': 50,
         'busy': False,
         'busy_for': None
     },
 
     'part2': {
         'part_id': 2,
-        'tam': 160,
-        'frag_int': 160,
+        'tam': 150,
+        'frag_int': 150,
         'busy': False,
         'busy_for': None
     },
 
     'part3': {
         'part_id': 3,
-        'tam': 300,
-        'frag_int': 160,
+        'tam': 250,
+        'frag_int': 250,
         'busy': False,
         'busy_for': None
     },
