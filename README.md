@@ -1,32 +1,21 @@
 
 
-# Init
+Primer comando
 
-Clonar el repositorio por https o ssh
-
-En la raiz del repositorio ejecuta
-
-```sh
 python -m venv venv
 ```
 
-Luego activamos el entorno virtual, en linux es de esta manera:
+Luego
 
-```sh
-source venv/bin/activate
-```
+venv\Scripts\activate 
 
-> **Nota:*** En windows no tengo idea como se activa pero es mas o menos similar.
+Dependencias del proyecto
 
 
-Luego instalamos las dependencias del proyecto
-
-```sh
 pip install -r requirements.txt
-```
 
-Por ultimo lo ejecutamos
 
-```sh
+
+
+Luego
 python src/main.py
-```
