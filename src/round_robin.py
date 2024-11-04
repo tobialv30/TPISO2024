@@ -362,59 +362,56 @@ def main_round_robin():
     # mientras haya procesos en nuevos o listo_suspendido o en ejecucion o listos se ejecuta el bucle
     while (p_nuevos) or (listo_suspendido) or (ejecucion) or (listos):
 
-        # se verifica cuales procesos ya cumplen con el tiempo de arribo y se lo lleva a la cola de espera
-        verificar_tiempo_arribo()
+       
+        verificar_tiempo_arribo()  #Procesos a cola de espera
 
-        # "Cargar" a memoria secundaria aquellos procesos que esten en listo_suspendido
+        # Cargamos a memoria secundaria
         for proceso in listo_suspendido:
             # Se fija si se encuentra en en memoria principal o Si está en memoria secundaria
             if (proceso not in aux_principal) or (proceso not in memoria_secundaria):
                 memoria_secundaria.append(proceso)
 
-        verificar_multiprogramacion()
-
-        # Intenta aplicar best fit para los 3 primeros de listos (se agarran 3 y no 2 porque puede que no haya nada en ejecucion, para ahorrar)
-        # testear que onda con el numero
+        verificar_multiprogramacion() # Hasta 5
+        
         for proceso in listos[:3]:
             # Para no cargar un proceso ya cargado
             if not (((proceso[0] == memory["part1"]["busy_for"])) or ((proceso[0] == memory["part2"]["busy_for"])) or ((proceso[0] == memory["part3"]["busy_for"]))):
                 worst_fit(proceso)
 
-        ejecutar_proceso()
 
-        # Si proceso termina, eliminarlo
+        ejecutar_proceso() #El tiempo se incrementa segundo a segundo
+
+
+
+
+        #os.system('cls')    Limpiar pantalla
         
-        # imprimir tablas
-        # se limpia la panatalla        
-        #os.system('cls')    # comando windows
-        #os.system('clear')  # por si se ejecuta en linux
-        
-        # como no se puede actualizar campo por campo los datos hacemos que se reimpriman las dos tablas
-        resetPrintMemoria()
-        resetPrintProcesos()
+
+        resetPrintMemoria()                  #tabla actualizada
+        resetPrintProcesos()                 #tabla actualizada
         
         console.print(PrintMemoria)
         console.print(PrintProcesos)
 
 
-        verificar_quantum()
+        verificar_quantum()                #Cambiamos de proceso si Q igual a 3
 
-        verificar_procesos_ejecucion()
+        verificar_procesos_ejecucion()     #Pasamos a ejecucion 
 
         
         
     
-        ######comprobar_eventos()
+        #comprobar_eventos()
         # input()
 
-        # Al cambiar proceso de ejecucion, asegurarse que esté cargado en memoria1 (Swap in / swap out)
+       
 
         if (ejecucion) and (ejecucion[0] not in aux_principal):
-            swap_in(ejecucion[0])
+            swap_in(ejecucion[0])                             # Como cambiamos de procesos, nos fijamos si esta en mem principal aux
 
-        # Incrementa el tiempo
+    
         print('El tiempo actual ',tiempo_actual)
-        tiempo_actual += 1
+        tiempo_actual += 1                       # Incrementa el tiempo CPU
 
 
 def Estadisticas():
@@ -432,9 +429,6 @@ def Estadisticas():
         PromRet = PromRet + retorno 
         Espera = retorno - proceso[6]
         PromEsp = PromEsp +  Espera
-        #print('PROCESO', proceso[0])
-        #print('El tiempo de retorno ', retorno)
-        #print('El tiempo de espera ', Espera)
         PrintEstadisticas.add_row(str(proceso[0]),str(retorno),str(Espera))
     
     console.print(PrintEstadisticas)
@@ -455,7 +449,7 @@ def Estadisticas():
 
 
 
-# PARTE DE ESTRUCTURAS DE DATOS
+# Memoria
 
 memory = {
     'part1': {
@@ -485,25 +479,27 @@ memory = {
 
 
 
-# Nombre del archivo CSV
+#Definicion de datos
+
+
 nombre_archivo = 'procesos.csv'
 
-# Lista de listos que no pueden entrar por el maximo de 5
+
 listo_suspendido = []
 
-# Procesos que están listos
+
 listos = []
 
-# Procesos nuevos
+
 p_nuevos = []
 
-# Proceso que se está ejecutando
+
 ejecucion = []
 
-# Proceso terminado
+
 terminados = []
 
-# Memoria secundaria (Solamente la lista)
+
 memoria_secundaria = []
 aux_principal = []
 
@@ -511,12 +507,12 @@ PromRet = 0
 
 PromEsp = 0
 
-# Se inicializa el tiempo en 0 por si algun proceso arriba en ese momento
+
 tiempo_actual = 0
 
 
-# Se define el quantum que se desea (2 para el TPI) y se inicia el quantum que se va a ir contandun, un aux
-quantum = 2
+
+quantum = 3
 quantum_actual = 0
 
 
