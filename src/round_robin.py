@@ -199,7 +199,7 @@ def comprobar_eventos():
         pass
 
 
-# Abre el archivo CSV en modo lectura, filtra los primeros 10 y ordena
+
 def open_csv():
     global p_nuevos
     global nombre_archivo
@@ -443,7 +443,7 @@ memory = {
 #Definicion de datos
 
 
-nombre_archivo = 'procesos.csv'
+nombre_archivo = 'procesosv2.csv'
 
 
 listo_suspendido = []
