@@ -5,9 +5,7 @@ import os
 
 
 
-# -----------------------------
-# Parte grafica
-# Funciones
+#Tablas
 
 def resetPrintMemoria():
     global PrintMemoria
@@ -76,25 +74,13 @@ def resetPrintProcesos():
     for proceso in terminados:
         PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Finalizado",str(proceso[5]))
 
-#style red le saque por ahora
 
 
 
-#EJEMPLO PANTALLA PROCESO
-
-#        0              1           2               3
-#  | id_proceso  |   Tamaño   |   Arribo    |   Irrupcion   |
-# -----------------------------
-# Definicion de las funciones
-# -----------------------------
 
 
 
-# -----------------------------
-# PARTE LOGICA
-# -----------------------------
-
-# Se ve cuales procesos ya cumplen con el tiempo de arribo y se los lleva a la espera
+# Se carga aquellos procesos que arribaron
 def verificar_tiempo_arribo():
 
     # Se utilizan las variables globales para acceder y modificar las listas y variables definidas fuera de la función
@@ -108,38 +94,36 @@ def verificar_tiempo_arribo():
         # Comprueba si el tiempo de arribo del proceso es menor o igual al tiempo actual
         if proceso[2] <= tiempo_actual:
             # Si cumple la condición, se considera que ha llegado al tiempo de arribo 
-            # y se mueve a la lista de procesos listos para ser suspendidos
+            # y se mueve a la lista de procesos listos suspendidos
             listo_suspendido.append(proceso)
 
             # Elimina el proceso de la lista de procesos nuevos, ya que ha sido movido
             p_nuevos.remove(proceso)
             
-    # no es un evento relevante ya que no hace falta, que solo se agregan de nuevos a listo suspendido
+
 
 
 # Si no hay 5 procesos en listos o ejecución, se los pone en listo
-
-
 def verificar_multiprogramacion():
     global ejecucion
     global listos
     global listo_suspendido
     global tiempo_actual  # Asegúrate de que este es el tiempo de CPU actual
 
-    if (len(ejecucion) + len(listos) < 5) and listo_suspendido:
+    if (len(ejecucion) + len(listos) < 5) and listo_suspendido:    #Multiprogramacion grado 5
         procesos_que_entran = 5 - len(ejecucion) - len(listos)
 
         # Agrega los procesos que pueden entrar en la lista de listos
         for i in range(min(procesos_que_entran, len(listo_suspendido))):
             proceso = listo_suspendido[i]
-            proceso[6] = tiempo_actual  # Guardar tiempo de CPU actual
+            proceso[6] = tiempo_actual  # Guardar tiempo de CPU actual para tiempo de espera
             listos.append(proceso)
 
         # Elimina los procesos que se han movido a la lista de listos
         listo_suspendido = listo_suspendido[procesos_que_entran:]
 
 
-# funcion que lleva un proceso a la lista de ejecucion
+# Ejecutar un proceso
 def ejecutar_proceso():
     global tiempo_actual
     global ejecucion_flag
@@ -147,27 +131,26 @@ def ejecutar_proceso():
     global terminados
     global quantum_actual
     
-    ejecucion_flag = False
+    ejecucion_flag = False           #Bandera que sirve en caso que un proceso termine
 
     if ejecucion:
         ejecucion[0][3] -= 1
         quantum_actual += 1
 
         # Verifica si el proceso se haya terminado de ejecutar lo lleva a la lista de terminados
-        # Si el proceso termina de ejecutarse se debe retirar de la lista
         if ejecucion[0][3] == 0:
            
-            # se habilita la bandera de evento
-            ejecucion_flag=True            #cambia el proceso, luego esto genera el evento
+
+            ejecucion_flag=True            #Para el evento de cambio
             
             terminados.append(ejecucion[0])
-            terminados[-1][5]= tiempo_actual
+            terminados[-1][5]= tiempo_actual     #Para el calculo de tiempo de retorno
             ejecucion.pop(0)
             quantum_actual = 0
 
-            aux_principal.pop(aux_principal.index(terminados[-1]))
+            aux_principal.pop(aux_principal.index(terminados[-1]))   #Saca de la lista aux MP al proceso que termino
 
-            # Parte de la gestion de memoria: libera la memoria reseteando los valores de dicha particion
+            # Libera la memoria
             for mem, mem_map in memory.items():
                 if (terminados[-1][0] == mem_map["busy_for"]):
                     mem_map["frag_int"] = mem_map["tam"]
@@ -177,7 +160,6 @@ def ejecutar_proceso():
 
 # Verifica si es necesario cambiar el proceso en ejecución debido al quantum
 
-
 def verificar_quantum():
 
     global ejecucion
@@ -186,7 +168,7 @@ def verificar_quantum():
     global listos
 
     if quantum_actual == quantum and ejecucion:
-        listos.append(ejecucion[0])
+        listos.append(ejecucion[0])                          #Lo pasa a listo
         ejecucion.pop(0)
         quantum_actual = 0
 
@@ -203,7 +185,7 @@ def verificar_procesos_ejecucion():
         listos.pop(0)
 
 
-# Funcion que pretende parar el simulador ante cada evento importante
+# Detiene el simulador cuando termina un proceso
 def comprobar_eventos():
     global ejecucion_flag
     global tiempo_actual
@@ -220,12 +202,11 @@ def comprobar_eventos():
 # Abre el archivo CSV en modo lectura, filtra los primeros 10 y ordena
 def open_csv():
     global p_nuevos
-
+    global nombre_archivo
     p_nuevos = []
 
-    with open('procesos.csv', mode='r') as archivo_csv:
+    with open(nombre_archivo, mode='r') as archivo_csv:
 
-        # Crea un objeto lector CSV
         lector_csv = csv.reader(archivo_csv)
 
         # Itera a través de las filas del archivo CSV
@@ -238,21 +219,12 @@ def open_csv():
 
     print('csv abierto!!')
 
-    # Elimina los elementos con valor > 250 de tamaño de proceso porque nunca van a poder entrar
-    # filtra la lista nuevo por tamaño
 
    
-    # Ordena la lista procesos_filtrados por tiempo de arribo (por comodidad nms)
+    # Ordena la lista procesos_filtrados por tiempo de arribo
     p_nuevos = sorted(p_nuevos, key=lambda proceso: proceso[2])
 
     return p_nuevos
-
-
-def print_memory_state():
-    print("-- Estado Actual de la Memoria --")
-    
-    for mem, mem_map in memory.items():
-        print(f'Partición {mem}: {mem_map}')
 
 
 
@@ -300,30 +272,25 @@ def worst_fit(proceso):
 
 
 
-# Parecida a la funcion best fit, la diferencia es que, aqui no se controla si esta ocupada o no
-# porque simplemente ese proceso que debe hacer swap_in es porque no esta en memoria y debe ocupar la cpu
-# por lo tanto debe reemplazarse en la mejor particion
+# En caso que un proceso deba hacer swapin swapout, sin importar si la mem esta ocupada
 
 def swap_in(proceso):
     global memory
     global memoria_secundaria
     global aux_principal
 
-    # Inicializamos las variables para almacenar la partición que dejará más espacio libre (mayor fragmentación)
     worst_partition = None
-    worst_fragmentation = -1  # Valor inicial negativo para asegurar que cualquier fragmentación positiva lo reemplace
+    worst_fragmentation = -1 
 
-    # Buscamos la partición que tenga mayor espacio libre después de asignar el proceso
+    #Igual a worstfit
     for mem, mem_map in memory.items():
-        # Calculamos la fragmentación de cada partición (espacio sobrante después de asignar el proceso)
         fragmentacion = mem_map["tam"] - proceso[1]
 
-        # Si la partición es lo suficientemente grande y tiene mayor fragmentación que la encontrada hasta ahora
         if fragmentacion >= 0 and fragmentacion > worst_fragmentation:
             worst_fragmentation = fragmentacion
             worst_partition = mem
 
-    # Si encontramos una partición adecuada
+
     if worst_partition is not None:
         # Realizamos el swap-out si la partición ya está ocupada
         mem_map = memory[worst_partition]
@@ -340,13 +307,9 @@ def swap_in(proceso):
         mem_map["busy_for"] = proceso[0]
         aux_principal.append(proceso)  # Swap-in del nuevo proceso
 
-    else:
-        # Si no hay partición adecuada, el proceso sigue en memoria secundaria (puedes manejar el caso aquí)
-        print(f" {proceso[0]}")
 
 
 
-# Ejecuta el round robin
 def main_round_robin():
 
     global tiempo_actual
@@ -373,7 +336,7 @@ def main_round_robin():
 
         verificar_multiprogramacion() # Hasta 5
         
-        for proceso in listos[:3]:
+        for proceso in listos[:3]:    #Parte de asignacion de memoria
             # Para no cargar un proceso ya cargado
             if not (((proceso[0] == memory["part1"]["busy_for"])) or ((proceso[0] == memory["part2"]["busy_for"])) or ((proceso[0] == memory["part3"]["busy_for"]))):
                 worst_fit(proceso)
@@ -401,9 +364,7 @@ def main_round_robin():
         
         
     
-        #comprobar_eventos()
-        # input()
-
+        comprobar_eventos()
        
 
         if (ejecucion) and (ejecucion[0] not in aux_principal):
