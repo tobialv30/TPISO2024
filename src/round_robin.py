@@ -416,6 +416,13 @@ def Estadisticas():
     PromediosTabla.add_row("Tiempo de retorno promedio", f"{promedio_retorno:.2f}")
     PromediosTabla.add_row("Tiempo de espera promedio", f"{promedio_espera:.2f}")
 
+    
+     # Cálculo del rendimiento
+    rendimiento = len(terminados) / tiempo_actual
+    PromediosTabla.add_row("Rendimiento del sistema (trabajos/tiempo)", f"{rendimiento:.2f}")
+
+    
+    
     console.print(PromediosTabla)
 
 
