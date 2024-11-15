@@ -44,7 +44,14 @@ def resetPrintMemoria():
         str(part3["busy"]),
         str(part3["busy_for"])
     )
-
+    part1 = so["part1"]
+    PrintMemoria.add_row(
+            str(part1["part_id"]),
+            str(part1["tam"]),
+            str(part1["frag_int"]),
+            str(part1["busy"]),
+            str(part1["busy_for"])
+        )
 
 
 def resetPrintProcesos():
@@ -194,6 +201,7 @@ def comprobar_eventos():
     
     if (ejecucion_flag):    # Nuevo proceso en ejecucion
         print(f'Tiempo {tiempo_actual}: Ejecucion de un Nuevo proceso')
+        print('PORFAVOR PRESIONE ENTER PARA CONTINUAR')
         input()
     elif(): # 
         pass
@@ -325,7 +333,12 @@ def main_round_robin():
     # mientras haya procesos en nuevos o listo_suspendido o en ejecucion o listos se ejecuta el bucle
     while (p_nuevos) or (listo_suspendido) or (ejecucion) or (listos):
 
-       
+        print()
+        print()
+        print()
+
+        console.print("[bold magenta]El tiempo actual es[/bold magenta] [cyan]{:04d}[/cyan]".format(tiempo_actual), justify="left")
+
         verificar_tiempo_arribo()  #Procesos a cola de espera
 
         # Cargamos a memoria secundaria
@@ -371,7 +384,7 @@ def main_round_robin():
             swap_in(ejecucion[0])                             # Como cambiamos de procesos, nos fijamos si esta en mem principal aux
 
     
-        print('El tiempo actual ',tiempo_actual)
+
         tiempo_actual += 1                       # Incrementa el tiempo CPU
 
 
@@ -380,22 +393,30 @@ def Estadisticas():
     global PromRet
     global PromEsp
     
-    PrintEstadisticas = Table(title="Estadisticas")
+    PrintEstadisticas = Table(title="Estadísticas")
     PrintEstadisticas.add_column("ID PROCESO", justify="center", style="cyan", no_wrap=True)
     PrintEstadisticas.add_column("Tiempo de retorno", justify="center", style="magenta")
     PrintEstadisticas.add_column("Tiempo de espera", justify="center", style="green")
     
     for proceso in terminados:
         retorno = proceso[5] - proceso[2]
-        PromRet = PromRet + retorno 
+        PromRet += retorno 
         Espera = retorno - proceso[6]
-        PromEsp = PromEsp +  Espera
-        PrintEstadisticas.add_row(str(proceso[0]),str(retorno),str(Espera))
+        PromEsp += Espera
+        PrintEstadisticas.add_row(str(proceso[0]), str(retorno), str(Espera))
     
     console.print(PrintEstadisticas)
     
-    print('El tiempo de retorno promedio ',  PromRet/len(terminados))
-    print('El tiempo de espera promedio ', PromEsp/len(terminados))
+    PromediosTabla = Table(title="Promedios")
+    PromediosTabla.add_column("PROMEDIO", justify="center", style="cyan", no_wrap=True)
+    PromediosTabla.add_column("Valor", justify="center", style="magenta")
+
+    promedio_retorno = PromRet / len(terminados)
+    promedio_espera = PromEsp / len(terminados)
+    PromediosTabla.add_row("Tiempo de retorno promedio", f"{promedio_retorno:.2f}")
+    PromediosTabla.add_row("Tiempo de espera promedio", f"{promedio_espera:.2f}")
+
+    console.print(PromediosTabla)
 
 
 
@@ -438,7 +459,15 @@ memory = {
     },
 }
 
-
+so = {
+    'part1': {
+        'part_id': 0,
+        'tam': 100,
+        'frag_int': 0,
+        'busy': True,
+        'busy_for': 'SISTEMA OPERATIVO'
+    }
+}
 
 #Definicion de datos
 
