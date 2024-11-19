@@ -64,23 +64,24 @@ def resetPrintProcesos():
     PrintProcesos.add_column("Tamaño", style="magenta")
     PrintProcesos.add_column("T. Arribo", justify="right", style="green")
     PrintProcesos.add_column("T. Irrupcion", justify="right", style="green")
+    PrintProcesos.add_column("T. Restante", justify="right", style="green")
     PrintProcesos.add_column("Estado", justify="right", style="green")
     PrintProcesos.add_column("Tiempo salida CPU", justify="right", style="green")
 
     for proceso in p_nuevos:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Nuevo")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]),str(proceso[4]), str(proceso[3]), "Nuevo")
 
     for proceso in listo_suspendido:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Listo/Suspendido")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]),str(proceso[4]), str(proceso[3]), "Listo/Suspendido")
 
     for proceso in listos:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Listo")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]),str(proceso[4]), str(proceso[3]), "Listo")
 
     for proceso in ejecucion:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Ejecucion")
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]),str(proceso[4]), str(proceso[3]), "Ejecucion")
 
     for proceso in terminados:
-        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]), str(proceso[3]), "Finalizado",str(proceso[5]))
+        PrintProcesos.add_row(str(proceso[0]), str(proceso[1]), str(proceso[2]),str(proceso[4]), str(proceso[3]), "Finalizado",str(proceso[5]))
 
 
 
@@ -201,7 +202,7 @@ def comprobar_eventos():
 
     # Estas condiciones van a ser de retroalimentación al usuario, se debe parar el simulador cuando haya:
     if ejecucion_flag:  # Nuevo proceso en ejecución
-        print(f'Tiempo {tiempo_actual}: Ejecución de un Nuevo proceso')
+        print(f'Tiempo {tiempo_actual}: PROCESO FINALIZO EJECUCION')
 
         # Bucle para garantizar que el usuario presione "Enter"
         while True:
