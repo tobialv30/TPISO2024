@@ -1,7 +1,8 @@
 import csv
+import sys
 from rich.console import Console
 from rich.table import Table
-import os
+
 
 
 
@@ -193,39 +194,57 @@ def verificar_procesos_ejecucion():
 
 
 # Detiene el simulador cuando termina un proceso
+
 def comprobar_eventos():
     global ejecucion_flag
     global tiempo_actual
-    
-    # Estas condiciones van a ser de retroalimentacion al usuario, se debe parar el simulador cuando haya:
-    
-    if (ejecucion_flag):    # Nuevo proceso en ejecucion
-        print(f'Tiempo {tiempo_actual}: Ejecucion de un Nuevo proceso')
-        print('PORFAVOR PRESIONE ENTER PARA CONTINUAR')
-        input()
-    elif(): # 
-        pass
 
+    # Estas condiciones van a ser de retroalimentación al usuario, se debe parar el simulador cuando haya:
+    if ejecucion_flag:  # Nuevo proceso en ejecución
+        print(f'Tiempo {tiempo_actual}: Ejecución de un Nuevo proceso')
+
+        # Bucle para garantizar que el usuario presione "Enter"
+        while True:
+            print('')
+            print('POR FAVOR, PRESIONE ENTER PARA CONTINUAR')
+            user_input = input()
+            
+            if user_input == "":  # Si solo presiona Enter
+                break  # Salir del bucle
+            else:  # Si presiona algo distinto a Enter
+                print("Error: Debe presionar únicamente la tecla Enter para continuar.")
 
 
 def open_csv():
     global p_nuevos
     global nombre_archivo
     p_nuevos = []
-
+    max_partition_size = max(part['tam'] for part in memory.values())
+    
     with open(nombre_archivo, mode='r') as archivo_csv:
-
         lector_csv = csv.reader(archivo_csv)
-
-        # Itera a través de las filas del archivo CSV
+        next(lector_csv)  # Ignorar la primera fila (encabezados)
+                                # Itera a través de las filas del archivo CSV
         for fila in lector_csv:
+            # Verifica si ya hay más de 10 procesos
+            if len(p_nuevos) >= 10:
+                print("ERROR: límite de 10 procesos. El archivo CSV no debe contener más de 10 procesos.")
+                sys.exit(1)
 
-            # Agrega los valores (con tipo int) a la lista nuevos
+            # Agrega los valores (con tipo int) a la lista p_nuevos
 
-            #                | id_proceso  |   Tamaño   |   Arribo    |   Irrupcion   | I fantasma
-            p_nuevos.append([ int(fila[0]), int(fila[1]),int(fila[2]), int(fila[3]),int(fila[3]),None,None])
+            id_proceso = int(fila[0])
+            tamano = int(fila[1])
+            arribo = int(fila[2])
+            irrupcion = int(fila[3])
+            
+            if tamano > max_partition_size:
+                print(f"ERROR: El proceso {id_proceso} supera el tamaño máximo de partición ({max_partition_size}).")
+                sys.exit(1)
 
-    print('csv abierto!!')
+            # Agrega la nueva entrada en la lista p_nuevos
+            p_nuevos.append([id_proceso, tamano, arribo, irrupcion, irrupcion, None, None])
+                                                                            #None se usan para los tiempos de espera retorno
 
 
    
@@ -337,7 +356,7 @@ def main_round_robin():
         print()
         print()
 
-        console.print("[bold magenta]El tiempo actual es[/bold magenta] [cyan]{:04d}[/cyan]".format(tiempo_actual), justify="left")
+        console.print("[bold magenta]El tiempo actual es[/bold magenta] [cyan]{:02d}[/cyan]".format(tiempo_actual), justify="left")
 
         verificar_tiempo_arribo()  #Procesos a cola de espera
 
@@ -405,6 +424,12 @@ def Estadisticas():
         PromEsp += Espera
         PrintEstadisticas.add_row(str(proceso[0]), str(retorno), str(Espera))
     
+
+    console.print("[bold magenta]ESTADO DE LA MEMORIA[/bold magenta]", justify="left")
+    console.print(PrintMemoria)
+    
+    
+    
     console.print(PrintEstadisticas)
     
     PromediosTabla = Table(title="Promedios")
@@ -424,18 +449,6 @@ def Estadisticas():
     
     
     console.print(PromediosTabla)
-
-
-
-
-    
-
-
-
-
-
-
-
 
 
 # Memoria
@@ -479,7 +492,7 @@ so = {
 #Definicion de datos
 
 
-nombre_archivo = 'procesosv2.csv'
+nombre_archivo = 'procesos.csv'
 
 
 listo_suspendido = []
