@@ -216,6 +216,7 @@ def comprobar_eventos():
                 print("Error: Debe presionar únicamente la tecla Enter para continuar.")
 
 
+
 def open_csv():
     global p_nuevos
     global nombre_archivo
@@ -224,35 +225,48 @@ def open_csv():
     
     with open(nombre_archivo, mode='r') as archivo_csv:
         lector_csv = csv.reader(archivo_csv)
-        next(lector_csv)  # Ignorar la primera fila (encabezados)
-                                # Itera a través de las filas del archivo CSV
-        for fila in lector_csv:
-            # Verifica si ya hay más de 10 procesos
-            if len(p_nuevos) >= 10:
-                print("ERROR: límite de 10 procesos. El archivo CSV no debe contener más de 10 procesos.")
+        encabezados = next(lector_csv)  # Leer la primera fila (encabezados)
+        
+        # Verifica si hay encabezados válidos
+        if len(encabezados) != 4 or encabezados != ["id_proceso", "tamano", "arribo", "irrupcion"]:
+            print("ERROR: El archivo CSV tiene encabezados incorrectos o un número incorrecto de columnas.")
+            sys.exit(1)
+
+        for i, fila in enumerate(lector_csv, start=2):  # Empieza desde la línea 2 (después de los encabezados)
+            # Verifica si la fila tiene el número correcto de columnas
+            if len(fila) != 4:
+                print(f"ERROR en la línea {i}: Número incorrecto de columnas.")
                 sys.exit(1)
 
-            # Agrega los valores (con tipo int) a la lista p_nuevos
+            try:
+                # Intenta convertir cada valor a entero y verifica que no esté vacío
+                id_proceso = int(fila[0])
+                tamano = int(fila[1]) if fila[1] else None
+                arribo = int(fila[2]) if fila[2] else None
+                irrupcion = int(fila[3]) if fila[3] else None
 
-            id_proceso = int(fila[0])
-            tamano = int(fila[1])
-            arribo = int(fila[2])
-            irrupcion = int(fila[3])
-            
-            if tamano > max_partition_size:
-                print(f"ERROR: El proceso {id_proceso} supera el tamaño máximo de partición ({max_partition_size}).")
+                # Verifica que no haya campos vacíos
+                if None in [id_proceso, tamano, arribo, irrupcion]:
+                    print(f"ERROR en la línea {i}: Faltan valores en alguna columna.")
+                    sys.exit(1)
+
+                # Verifica si el tamaño del proceso supera el máximo permitido
+                if tamano > max_partition_size:
+                    print(f"ERROR en la línea {i}: El proceso {id_proceso} supera el tamaño máximo de partición ({max_partition_size}).")
+                    sys.exit(1)
+
+                # Agrega la nueva entrada en la lista
+                p_nuevos.append([id_proceso, tamano, arribo, irrupcion, irrupcion, None, None])
+
+            except ValueError:
+                print(f"ERROR en la línea {i}: Formato inválido en los datos. Asegúrate de que todos los valores sean enteros.")
                 sys.exit(1)
 
-            # Agrega la nueva entrada en la lista p_nuevos
-            p_nuevos.append([id_proceso, tamano, arribo, irrupcion, irrupcion, None, None])
-                                                                            #None se usan para los tiempos de espera retorno
-
-
-   
-    # Ordena la lista procesos_filtrados por tiempo de arribo
+    # Ordena la lista por tiempo de arribo
     p_nuevos = sorted(p_nuevos, key=lambda proceso: proceso[2])
 
     return p_nuevos
+
 
 
 
