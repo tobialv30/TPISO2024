@@ -1,5 +1,6 @@
 import csv
 import sys
+import os
 from rich.console import Console
 from rich.table import Table
 
@@ -217,22 +218,43 @@ def comprobar_eventos():
 
 
 
+import os
+import sys
+import csv
+
 def open_csv():
     global p_nuevos
     global nombre_archivo
     p_nuevos = []
+
+    # Verifica si el archivo está vacío
+    if os.stat(nombre_archivo).st_size == 0:
+        print("ERROR: El archivo CSV está vacío.")
+        sys.exit(1)
+
+    # Obtiene el tamaño máximo de partición
     max_partition_size = max(part['tam'] for part in memory.values())
-    
+
     with open(nombre_archivo, mode='r') as archivo_csv:
         lector_csv = csv.reader(archivo_csv)
-        encabezados = next(lector_csv)  # Leer la primera fila (encabezados)
-        
-        # Verifica si hay encabezados válidos
+        try:
+            encabezados = next(lector_csv)  # Leer la primera fila (encabezados)
+        except StopIteration:
+            print("ERROR: El archivo CSV está vacío o no tiene contenido legible.")
+            sys.exit(1)
+
+        # Verifica si los encabezados son válidos
         if len(encabezados) != 4 or encabezados != ["id_proceso", "tamano", "arribo", "irrupcion"]:
             print("ERROR: El archivo CSV tiene encabezados incorrectos o un número incorrecto de columnas.")
             sys.exit(1)
 
-        for i, fila in enumerate(lector_csv, start=2):  # Empieza desde la línea 2 (después de los encabezados)
+        # Comprueba si hay filas de datos después de los encabezados
+        filas = list(lector_csv)
+        if not filas:
+            print("ERROR: El archivo CSV contiene solo los encabezados y no tiene procesos.")
+            sys.exit(1)
+
+        for i, fila in enumerate(filas, start=2):  # Empieza desde la línea 2 (después de los encabezados)
             # Verifica si la fila tiene el número correcto de columnas
             if len(fila) != 4:
                 print(f"ERROR en la línea {i}: Número incorrecto de columnas.")
@@ -250,18 +272,17 @@ def open_csv():
                     print(f"ERROR en la línea {i}: Faltan valores en alguna columna.")
                     sys.exit(1)
 
-                
                 # Verifica si el tamaño del proceso es 0
                 if tamano == 0:
-                    print(f"ERROR en la línea {i}: El proceso {id_proceso} ocupa 0 de espacio en memoria).")
+                    print(f"ERROR en la línea {i}: El proceso {id_proceso} ocupa 0 de espacio en memoria.")
                     sys.exit(1)
-                
+
                 # Verifica si el tamaño del proceso supera el máximo permitido
                 if tamano > max_partition_size:
                     print(f"ERROR en la línea {i}: El proceso {id_proceso} supera el tamaño máximo de partición ({max_partition_size}).")
                     sys.exit(1)
 
-                # Agrega la nueva entrada en la lista
+                # Agrega la nueva entrada a la lista
                 p_nuevos.append([id_proceso, tamano, arribo, irrupcion, irrupcion, None, None])
 
             except ValueError:
@@ -272,7 +293,6 @@ def open_csv():
     p_nuevos = sorted(p_nuevos, key=lambda proceso: proceso[2])
 
     return p_nuevos
-
 
 
 
@@ -513,7 +533,7 @@ so = {
 #Definicion de datos
 
 
-nombre_archivo = 'procesos.csv'
+nombre_archivo = 'procesosv3.csv'
 
 
 listo_suspendido = []
