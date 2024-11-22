@@ -250,6 +250,12 @@ def open_csv():
                     print(f"ERROR en la línea {i}: Faltan valores en alguna columna.")
                     sys.exit(1)
 
+                
+                # Verifica si el tamaño del proceso es 0
+                if tamano == 0:
+                    print(f"ERROR en la línea {i}: El proceso {id_proceso} ocupa 0 de espacio en memoria).")
+                    sys.exit(1)
+                
                 # Verifica si el tamaño del proceso supera el máximo permitido
                 if tamano > max_partition_size:
                     print(f"ERROR en la línea {i}: El proceso {id_proceso} supera el tamaño máximo de partición ({max_partition_size}).")
