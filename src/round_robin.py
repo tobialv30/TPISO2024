@@ -533,7 +533,7 @@ so = {
 #Definicion de datos
 
 
-nombre_archivo = 'procesosv3.csv'
+nombre_archivo = 'procesos.csv'
 
 
 listo_suspendido = []
